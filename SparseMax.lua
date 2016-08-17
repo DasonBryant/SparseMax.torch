@@ -4,17 +4,12 @@ require 'nn'
 -- "From Softmax to Sparsemax: A Sparse Model of Attention and Multi-Label Classification"
 -- André F. T. Martins, Ramón Fernandez Astudillo (http://arxiv.org/abs/1602.02068)
 
-local SparseMax, parent = torch.class('nn.SparseMax', 'nn.Module')
-
-function SparseMax:__init()
-  parent:__init(self)
-  self.taus = torch.Tensor()
-end
+local SparseMax = torch.class('nn.SparseMax', 'nn.Module')
 
 function SparseMax:updateOutput(input)
   local dim = 1
   local inputDim = input:nDimension()
-  if inputDim == 2 or inputDim == 4 then
+  if inputDim == 2 or inputDim == 4 then -- match functionality of nn.SoftMax
     dim = 2
   elseif input:nDimension() > 4 then
     error('1D, 2D, 3D or 4D tensor expected')
@@ -40,12 +35,12 @@ function SparseMax:updateOutput(input)
 
   -- Compute threshold function
   local zs_sparse = torch.cmul(is_gt, zs)
-  self.taus = torch.cdiv(torch.sum(zs_sparse, dim) - 1, k)
+  local taus = torch.cdiv(torch.sum(zs_sparse, dim) - 1, k)
 
   -- Sparsemax
   self.output = torch.cmax(
     torch.zeros(input:size()):typeAs(input),
-    input - self.taus:expandAs(input)
+    input - taus:expandAs(input)
   )
   return self.output
 end
