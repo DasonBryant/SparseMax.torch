@@ -22,10 +22,9 @@ function SparseMax:updateOutput(input)
   local zs = torch.sort(input, dim, true)
 
   local range = torch.range(1, sizeDim):typeAs(input)
-  if dim == 2 then
-    range = range:view(1, sizeDim)
-  end
-  range = range:expandAs(zs)
+  local rangeViewMask = zs:size():fill(1)
+  rangeViewMask[dim] = -1
+  range = range:view(rangeViewMask):expandAs(zs)
 
   -- Determine sparsity of projection
   local bound = 1 + torch.cmul(range, zs)
@@ -53,7 +52,6 @@ function SparseMax:updateGradInput(input, gradOutput)
   elseif input:nDimension() > 4 then
     error('1D, 2D, 3D or 4D tensor expected')
   end
-  local sizeDim = input:size()[dim]
 
   local nonzeros = torch.ne(self.output, 0):typeAs(self.output)
   self.gradInput = gradOutput - torch.sum(torch.cmul(gradOutput,nonzeros),dim):expandAs(gradOutput)
