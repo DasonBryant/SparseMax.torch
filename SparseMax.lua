@@ -57,7 +57,7 @@ function SparseMax:updateGradInput(input, gradOutput)
   end
 
   local nonzeros = torch.ne(self.output, 0):typeAs(self.output)
-  self.gradInput = gradOutput - torch.sum(torch.cmul(gradOutput,nonzeros),dim):expandAs(gradOutput)
-  self.gradInput = torch.cmul(nonzeros, self.gradInput)
+  local sum = torch.sum(torch.cmul(gradOutput, nonzeros), dim) / torch.sum(nonzeros)
+  self.gradInput = torch.cmul(nonzeros, gradOutput - sum:expandAs(gradOutput))
   return self.gradInput
 end
