@@ -16,6 +16,9 @@ function SparseMax:updateOutput(input)
   end
   local sizeDim = input:size()[dim]
 
+  -- Translate input by max for numerical stability
+  local input = input - torch.max(input, dim):expandAs(input)
+
   -- Sort input in descending order.
   -- (NOTE: Can be replaced with linear time selection method described here:
   --  http://stanford.edu/~jduchi/projects/DuchiShSiCh08.html)
