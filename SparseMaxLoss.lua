@@ -50,7 +50,7 @@ function SparseMaxLoss:updateOutput(input, target)
 
   -- Sparsemax loss
   local zs_squared = torch.cmul(zs_sparse, zs_sparse)
-  local taus_squared = torch.cmul(self.taus, self.taus):expandAs(zs_sparse)
+  local taus_squared = torch.cmul(is_gt, torch.cmul(self.taus, self.taus):expandAs(zs_sparse))
   local regTerm = (torch.sum(zs_squared - taus_squared, dim) * 0.5 + 0.5):expandAs(input)
   self.output = input - regTerm
   return self.output
